@@ -4,7 +4,7 @@ from pathlib import Path
 import argparse
 
 from core.interfaces import IBaseExtractService
-from core.utils import ExitCode
+from core.utils import ExitCode, CheckExtensions
 from dependency_injector.wiring import inject, Provide
 from containers import ApplicationContainer
 
@@ -49,7 +49,7 @@ def main(service: IBaseExtractService = Provide[ApplicationContainer.extract_ser
 def create_parser() -> argparse.ArgumentParser:
     _parser = argparse.ArgumentParser(
         prog='OppoDecrypt',
-        description=f'OppoDecrypt - command-line tool for extracting partition images from .ofp or .ops file'
+        description=f'OppoDecrypt - command-line tool for extracting partition images from .ofp'
     )
 
     _parser.add_argument(
@@ -62,6 +62,7 @@ def create_parser() -> argparse.ArgumentParser:
     _parser.add_argument(
         'INPUT_FILE',
         type=Path,
+        action=CheckExtensions({'ofp'}),
         nargs='?',
     )
     _parser.add_argument(
