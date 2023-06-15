@@ -11,7 +11,7 @@ __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 
 class LoguruLoggingService(ILogService):
     def __init__(self, configuration: dict[Any: Any]):
-        self._logger = logger.configure(**configuration)
+        self._logger_id = logger.configure(**configuration)
 
     @classmethod
     def log(cls, level: LogLevel, message: str, exception: Exception = None):

@@ -1,6 +1,6 @@
 from dependency_injector import containers, providers
 from services import ExtractService, LoguruLoggingService
-from extractors import QualcommExtractor
+from extractors import QualcommExtractor, MtkExtractor
 from core.models import CpuSupportEnum
 
 __author__ = 'MiuiPro.info DEV Team'
@@ -23,6 +23,12 @@ class ApplicationContainer(containers.DeclarativeContainer):
                 configuration=configuration.extractors.ofp_qualcomm,
                 logger=logging
             ),
+            CpuSupportEnum.MTK: providers.Factory(
+                MtkExtractor,
+                configuration=configuration.extractors.ofp_mtk,
+                logger=logging
+            ),
+
         }),
         logger=logging
     )
