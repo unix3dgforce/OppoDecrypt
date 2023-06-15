@@ -110,7 +110,8 @@ if __name__ == '__main__':
 
     if len(sys.argv) >= 2:
         if not namespace.INPUT_FILE.exists():
-            parser.print_help()
+            sys.stderr.write(f"File `{namespace.INPUT_FILE}` not found\n\n")
+            parser.print_help(file=sys.stderr)
             sys.exit(ExitCode.CONFIG)
 
         container = ApplicationContainer()
