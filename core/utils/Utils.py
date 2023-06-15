@@ -3,7 +3,7 @@ import io
 from pathlib import Path
 from typing import BinaryIO
 
-from core.models import HashAlgorithmEnum
+from core.models.enums.HashAlgorithmEnum import HashAlgorithmEnum
 from exceptions import UtilsNoSupportedHashAlgorithmError, UtilsFileNotFoundError
 
 __author__ = 'MiuiPro.info DEV Team'
@@ -12,7 +12,7 @@ __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 
 class Utils:
     @staticmethod
-    def de_obfuscate(data, mask):
+    def de_obfuscate_qualcomm(data, mask):
         def rol(x, n, bits=32):
             n = bits - n
             m = (2 ** n) - 1
@@ -24,6 +24,17 @@ class Utils:
             v = rol((data[i] ^ mask[i]), 4, 8)
             ret.append(v)
         return ret
+
+    @staticmethod
+    def mtk_header_shuffle(data, header_key=b"geyixue", header_size=0x6C) -> bytearray:
+        key = bytearray(header_key)
+        data = bytearray(data)
+        for index in range(0, header_size):
+            k = key[(index % len(key))]
+            h = ((((data[index]) & 0xF0) >> 4) | (16 * ((data[index]) & 0xF)))
+            data[index] = k ^ h
+
+        return data
 
     @staticmethod
     def read_chunk(fd: BinaryIO, length: int, buffer_size=4096):
@@ -62,4 +73,5 @@ class Utils:
                     return True
 
         return False
+
 

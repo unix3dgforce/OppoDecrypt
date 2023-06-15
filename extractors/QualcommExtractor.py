@@ -218,6 +218,4 @@ class QualcommExtractor(IExtractor):
         with open(input_file, 'rb') as fd:
             self._extract(fd, output_dir, file_size)
 
-
-
-
+        self._logger.information(f'Extract successfully')

@@ -7,5 +7,5 @@ __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 
 class IExtractor(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def extract(self, input_file: Path, out_dir: Path) -> None:
+    def extract(self, input_file: Path, output_dir: Path) -> None:
         """Abstract method extract"""

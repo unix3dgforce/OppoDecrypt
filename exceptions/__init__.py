@@ -1,3 +1,4 @@
+from .extractors.MtkExtractorExceptions import MtkExtractorUnsupportedCryptoSettingsError
 from .extractors.QualcommExtractorExceptions import QualcommExtractorXMLSectionNotFoundError, QualcommExtractorUnsupportedCryptoSettingsError
 from .UtilsExceptions import UtilsNoSupportedHashAlgorithmError, UtilsFileNotFoundError
 
