@@ -19,8 +19,8 @@ class OfpQualcommConfiguration:
             user_key = bytearray.fromhex(value.get('UserKey', ''))
             ivec = bytearray.fromhex(value.get('Ivec', ''))
 
-            k = (hashlib.md5(Utils.de_obfuscate(user_key, mc)).hexdigest()[0:16]).encode()
-            iv = (hashlib.md5(Utils.de_obfuscate(ivec, mc)).hexdigest()[0:16]).encode()
+            k = (hashlib.md5(Utils.de_obfuscate_qualcomm(user_key, mc)).hexdigest()[0:16]).encode()
+            iv = (hashlib.md5(Utils.de_obfuscate_qualcomm(ivec, mc)).hexdigest()[0:16]).encode()
 
             d.update({key: CryptoCredential(key=k, iv=iv)})
 

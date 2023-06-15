@@ -3,7 +3,8 @@ import sys
 from core.interfaces import IExtractor, IBaseExtractService, ILogService
 from core.models import CpuSupportEnum
 from core.utils import ExitCode
-from exceptions import QualcommExtractorUnsupportedCryptoSettingsError, QualcommExtractorXMLSectionNotFoundError
+from exceptions import QualcommExtractorUnsupportedCryptoSettingsError, QualcommExtractorXMLSectionNotFoundError, \
+    MtkExtractorUnsupportedCryptoSettingsError
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
@@ -21,8 +22,16 @@ class ExtractService(IBaseExtractService):
                 sys.exit(ExitCode.USAGE)
 
             self._extractors[cpu].extract(**kwargs)
-        except (QualcommExtractorUnsupportedCryptoSettingsError, QualcommExtractorXMLSectionNotFoundError) as error:
+        except (QualcommExtractorUnsupportedCryptoSettingsError,
+                QualcommExtractorXMLSectionNotFoundError,
+                MtkExtractorUnsupportedCryptoSettingsError) as error:
             self._logger.error(error.message)
 
         except KeyError:
             self._logger.error(f"Not found extractor")
+
+        except PermissionError as error:
+            self._logger.critical(f'{error.strerror}. {error.filename}')
+
+        except KeyboardInterrupt:
+            self._logger.critical(f"Oooopss....  program terminated")

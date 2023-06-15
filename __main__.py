@@ -1,4 +1,6 @@
 import sys
+from typing import Any
+
 import yaml
 from pathlib import Path
 import argparse
@@ -39,8 +41,15 @@ def load_yaml_configuration() -> dict:
 
     yaml.add_constructor('!func', run_func)
 
-    with open(Path(Path().resolve() / 'config.yml'), 'r') as stream:
+    with open(Path(Path(__file__).resolve().parent / 'config.yml'), 'r') as stream:
         return yaml.full_load(stream)
+
+
+def set_debug_mode(handlers: dict[Any, Any]) -> dict[Any, Any]:
+    for item in configuration['log']['handlers']:
+        item.update({'level': 'DEBUG'})
+
+    return handlers
 
 
 @inject
@@ -50,39 +59,46 @@ def main(service: IBaseExtractService = Provide[ApplicationContainer.extract_ser
 
 def create_parser() -> argparse.ArgumentParser:
     _parser = argparse.ArgumentParser(
-        prog='OppoDecrypt',
-        description=f'OppoDecrypt - command-line tool for extracting partition images from .ofp'
+        prog="OppoDecrypt",
+        description=f"OppoDecrypt - command-line tool for extracting partition images from .ofp"
     )
 
     _parser.add_argument(
-        '-v',
-        '--version',
-        action='version',
-        version=f'OppoDecrypt version [{__version__}]'
+        "-v",
+        "--version",
+        action="version",
+        version=f"OppoDecrypt version [{__version__}]"
     )
 
     _parser.add_argument(
         "-c",
         "--cpu",
         required=True,
-        help=f'choices, { (choices := tuple(v.value for k, v in CpuSupportEnum.__members__.items()))}',
-        dest='cpu',
+        help=f"choices, { (choices := tuple(v.value for k, v in CpuSupportEnum.__members__.items()))}",
+        dest="cpu",
         type=CpuSupportEnum,
         choices=choices,
         action=EnumAction
     )
 
     _parser.add_argument(
-        'INPUT_FILE',
+        "--debug",
+        type=bool,
+        default=False,
+        action=argparse.BooleanOptionalAction
+    )
+
+    _parser.add_argument(
+        "INPUT_FILE",
         type=Path,
         action=ExtensionsAction,
-        extensions=['ofp'],
-        nargs='?',
+        extensions=["ofp"],
+        nargs="?",
     )
     _parser.add_argument(
-        'OUTPUT_DIR',
+        "OUTPUT_DIR",
         type=Path,
-        nargs='?',
+        nargs="?",
     )
 
     return _parser
@@ -98,7 +114,12 @@ if __name__ == '__main__':
             sys.exit(ExitCode.CONFIG)
 
         container = ApplicationContainer()
-        container.configuration.from_dict(load_yaml_configuration())
+        configuration = load_yaml_configuration()
+        debug = vars(namespace).pop('debug', False)
+        if debug:
+            configuration['log']['handlers'] = set_debug_mode(configuration['log']['handlers'])
+
+        container.configuration.from_dict(configuration)
         container.init_resources()
         container.wire(modules=[sys.modules[__name__]])
 
