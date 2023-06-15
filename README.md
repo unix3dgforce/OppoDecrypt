@@ -3,7 +3,19 @@ Oppo .ofp Firmware decrypter
 
 Installation:
 -------------
-- Install >= python 3.10 and poetry
+- Install >= python 3.10 
+
+Install poetry:
+-------------
+### Linux, macOS, Windows (WSL)
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+### Windows (Powershell)
+```powershell
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+```
 
 In the console, run
 ```bash
