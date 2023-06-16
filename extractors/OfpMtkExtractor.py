@@ -1,13 +1,13 @@
 import io
-import shutil
 import struct
 from pathlib import Path
 from typing import BinaryIO
 
-from core.interfaces import IExtractor, ILogService
-from core.models import OfpMtkConfiguration, CryptoCredential
+from core.interfaces import ILogService
+from core.models import OfpMtkConfiguration
 from core.utils import Crypto, Utils
 from exceptions import MtkExtractorUnsupportedCryptoSettingsError
+from .BaseExtractor import BaseExtractor
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
@@ -60,11 +60,10 @@ class Entry:
         return data.replace(b"\x00", b"").decode('utf-8')
 
 
-class MtkExtractor(IExtractor):
+class MtkExtractor(BaseExtractor):
     def __init__(self, configuration: dict[str, any], logger: ILogService):
+        super().__init__(logger)
         self._configuration = OfpMtkConfiguration(**configuration)
-        self._logger = logger
-        self._crypto_config: CryptoCredential | None = None
 
     @staticmethod
     def _get_entries(fd: BinaryIO, header: Header, file_size: int):
@@ -91,13 +90,13 @@ class MtkExtractor(IExtractor):
 
         raise MtkExtractorUnsupportedCryptoSettingsError
 
-    def _extract(self, fd: BinaryIO, output_dir: Path, file_size):
+    def run(self, fd: BinaryIO, output_dir: Path, file_size) -> None:
         self._find_crypto_config(fd)
         fd.seek(-HEADER_SIZE, io.SEEK_END)
         header = Header(Utils.mtk_header_shuffle(fd.read(HEADER_SIZE)))
 
         for entry in self._get_entries(fd, header, file_size):
-            self._logger.information(f"Extracting {entry.filename}")
+            self.logger.information(f"Extracting {entry.filename}")
             self._write_to_file(fd, entry, output_dir)
 
     def _write_to_file(self, fd: BinaryIO, entry: Entry, output_dir: Path):
@@ -116,15 +115,6 @@ class MtkExtractor(IExtractor):
                 out.write(chunk)
 
     def extract(self, input_file: Path, output_dir: Path) -> None:
-        self._logger.information("Run Mtk extractors")
+        self.logger.information("Run Mtk extractors")
 
-        if output_dir.exists():
-            shutil.rmtree(output_dir)
-
-        output_dir.mkdir(parents=True)
-        file_size = input_file.stat().st_size
-
-        with open(input_file, 'rb') as fd:
-            self._extract(fd, output_dir, file_size)
-
-        self._logger.information(f'Extract successfully')
+        super().extract(input_file, output_dir)

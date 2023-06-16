@@ -1,17 +1,17 @@
 import dataclasses
 import io
-import shutil
 import struct
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import BinaryIO, Callable
 from xml.etree.ElementTree import Element
 
-from core.interfaces import IExtractor, ILogService
-from core.models import OfpQualcommConfiguration, CryptoCredential, HashAlgorithmEnum
+from core.interfaces import ILogService
+from core.models import OfpQualcommConfiguration, HashAlgorithmEnum
 from core.utils import Crypto, Utils
 from exceptions import QualcommExtractorXMLSectionNotFoundError, QualcommExtractorUnsupportedCryptoSettingsError, \
     UtilsNoSupportedHashAlgorithmError, UtilsFileNotFoundError
+from .BaseExtractor import BaseExtractor
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
@@ -38,15 +38,14 @@ class Job:
     action: Callable = None
 
 
-class QualcommExtractor(IExtractor):
+class OfpQualcommExtractor(BaseExtractor):
     def __init__(self, configuration: dict[str, any], logger: ILogService):
+        super().__init__(logger)
         self._configuration = OfpQualcommConfiguration(**configuration)
-        self._logger = logger
-        self._crypto_config: CryptoCredential | None = None
         self._pagesize = None
 
     def _copy(self, fd: BinaryIO, output_dir: Path, payload: Payload) -> Path:
-        self._logger.information(f"Extracting {payload.filename}")
+        self.logger.information(f"Extracting {payload.filename}")
         fd.seek(payload.start_position)
         with open((dst_file := output_dir / payload.filename), 'wb') as out:
             for chunk in Utils.read_chunk(fd, payload.length, buffer_size=CHUNK_SIZE):
@@ -55,7 +54,7 @@ class QualcommExtractor(IExtractor):
         return dst_file
 
     def _decrypt_file(self, fd: BinaryIO, output_dir: Path, payload: Payload) -> Path:
-        self._logger.information(f"Extracting {payload.filename}")
+        self.logger.information(f"Extracting {payload.filename}")
         if payload.rlength == payload.length:
             _ = payload.length
             payload.length = (payload.length // 0x4 * 0x4)
@@ -92,7 +91,7 @@ class QualcommExtractor(IExtractor):
 
     def _decrypt_xml_data(self, xml_crypto_data: bytes) -> str:
         for version, crypto_credential in self._configuration.keys.items():
-            self._logger.trace(f"Check {version}")
+            self.logger.trace(f"Check {version}")
             if b"<?xml" in (result := Crypto.decrypt_aes_cfb(crypto_credential, xml_crypto_data)):
                 self._crypto_config = crypto_credential
                 return result[:result.rfind(b">") + 1].decode('utf-8')
@@ -122,11 +121,11 @@ class QualcommExtractor(IExtractor):
 
         return fd.read(length)
 
-    def _extract(self, fd: BinaryIO, output_dir: Path, file_size):
+    def run(self, fd: BinaryIO, output_dir: Path, file_size) -> None:
         xml_data = self._decrypt_xml_data(self._find_xml_crypto_data(fd, file_size))
 
         (pro_file_path := output_dir / "ProFile.xml").write_text(xml_data)
-        self._logger.debug(f"Save Profile in {pro_file_path}")
+        self.logger.debug(f"Save Profile in {pro_file_path}")
 
         for job in self._parse_xml_section(xml_data):
             dst_path = job.action(fd, output_dir, job.payload)
@@ -136,19 +135,19 @@ class QualcommExtractor(IExtractor):
             elif job.payload.sha256 and job.payload.sha256 != "":
                 algorithm = HashAlgorithmEnum.Sha256
             else:
-                self._logger.debug(f"Skip check checksum for {job.payload.filename}")
+                self.logger.debug(f"Skip check checksum for {job.payload.filename}")
                 continue
 
             try:
                 if Utils.validate_checksum(job.payload.__getattribute__(algorithm), dst_path, algorithm):
-                    self._logger.debug(f"Check {job.payload.filename} success! Algorithm {algorithm}: verified")
+                    self.logger.debug(f"Check {job.payload.filename} success! Algorithm {algorithm}: verified")
                 else:
-                    self._logger.error(f"{dst_path} hashes error. File might be broken!")
+                    self.logger.error(f"{dst_path} hashes error. File might be broken!")
             except UtilsNoSupportedHashAlgorithmError as error:
-                self._logger.error(error.message)
+                self.logger.error(error.message)
 
             except UtilsFileNotFoundError as error:
-                self._logger.error(error.message)
+                self.logger.error(error.message)
 
     def _parse_xml_item(self, element: Element) -> Payload:
         payload = Payload()
@@ -207,15 +206,6 @@ class QualcommExtractor(IExtractor):
         return result
 
     def extract(self, input_file: Path, output_dir: Path) -> None:
-        self._logger.information("Run Qualcomm extractors")
+        self.logger.information("Run Qualcomm extractors")
 
-        if output_dir.exists():
-            shutil.rmtree(output_dir)
-
-        output_dir.mkdir(parents=True)
-        file_size = input_file.stat().st_size
-
-        with open(input_file, 'rb') as fd:
-            self._extract(fd, output_dir, file_size)
-
-        self._logger.information(f'Extract successfully')
+        super().extract(input_file, output_dir)
