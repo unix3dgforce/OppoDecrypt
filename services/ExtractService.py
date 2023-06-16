@@ -1,7 +1,6 @@
 import sys
 
 from core.interfaces import IExtractor, IBaseExtractService, ILogService
-from core.models import CpuSupportEnum
 from core.utils import ExitCode
 from exceptions import QualcommExtractorUnsupportedCryptoSettingsError, QualcommExtractorXMLSectionNotFoundError, \
     MtkExtractorUnsupportedCryptoSettingsError
@@ -11,7 +10,7 @@ __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 
 
 class ExtractService(IBaseExtractService):
-    def __init__(self, extractors: dict[CpuSupportEnum, IExtractor], logger: ILogService):
+    def __init__(self, extractors: dict[str, IExtractor], logger: ILogService):
         self._extractors = extractors
         self._logger = logger
 
@@ -20,8 +19,9 @@ class ExtractService(IBaseExtractService):
             if not (cpu := kwargs.pop('cpu', None)):
                 self._logger.error(f"Unsupported cpu type")
                 sys.exit(ExitCode.USAGE)
+            filename = kwargs.get("input_file", None)
 
-            self._extractors[cpu].extract(**kwargs)
+            self._extractors[f"{filename.suffix[1:]}_{cpu}"].extract(**kwargs)
         except (QualcommExtractorUnsupportedCryptoSettingsError,
                 QualcommExtractorXMLSectionNotFoundError,
                 MtkExtractorUnsupportedCryptoSettingsError) as error:
