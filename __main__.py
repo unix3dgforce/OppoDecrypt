@@ -92,7 +92,7 @@ def create_parser() -> argparse.ArgumentParser:
         "INPUT_FILE",
         type=Path,
         action=ExtensionsAction,
-        extensions=["ofp"],
+        extensions=["ofp", "ops"],
         nargs="?",
     )
     _parser.add_argument(

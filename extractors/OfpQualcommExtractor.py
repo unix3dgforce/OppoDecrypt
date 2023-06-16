@@ -206,6 +206,6 @@ class OfpQualcommExtractor(BaseExtractor):
         return result
 
     def extract(self, input_file: Path, output_dir: Path) -> None:
-        self.logger.information("Run Qualcomm extractors")
+        self.logger.information("Run Qualcomm extractor")
 
         super().extract(input_file, output_dir)

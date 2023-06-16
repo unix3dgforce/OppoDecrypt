@@ -19,9 +19,9 @@ class ExtractService(IBaseExtractService):
             if not (cpu := kwargs.pop('cpu', None)):
                 self._logger.error(f"Unsupported cpu type")
                 sys.exit(ExitCode.USAGE)
-            filename = kwargs.get("input_file", None)
+            prefix = kwargs.get("input_file").suffix[1:]
 
-            self._extractors[f"{filename.suffix[1:]}_{cpu}"].extract(**kwargs)
+            self._extractors[f"{prefix}_{cpu}"].extract(**kwargs)
         except (QualcommExtractorUnsupportedCryptoSettingsError,
                 QualcommExtractorXMLSectionNotFoundError,
                 MtkExtractorUnsupportedCryptoSettingsError) as error:

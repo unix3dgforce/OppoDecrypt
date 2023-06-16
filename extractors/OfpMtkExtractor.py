@@ -115,6 +115,6 @@ class MtkExtractor(BaseExtractor):
                 out.write(chunk)
 
     def extract(self, input_file: Path, output_dir: Path) -> None:
-        self.logger.information("Run Mtk extractors")
+        self.logger.information("Run Mtk extractor")
 
         super().extract(input_file, output_dir)

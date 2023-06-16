@@ -1,4 +1,5 @@
 extractors:
+  ops:
   ofp_mtk:
     keys:
       - ObsKey: "67657963787565E837D226B69A495D21"
