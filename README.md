@@ -1,5 +1,5 @@
 # OppoDecrypt
-Oppo .ofp Firmware decrypter
+Oppo .ofp and Oneplus .ops Firmware decrypter
 
 Installation:
 -------------
@@ -27,7 +27,7 @@ Usage:
 * Extract oppo ofp file:
 
 ```
-python3 OppoDecrypt --cpu {qualcomm,mtk} [--debug | --no-debug] [file.ofp] [directory to extract]
+python3 OppoDecrypt --cpu {qualcomm,mtk} [--debug | --no-debug] [file.ofp | file.ops] [directory to extract]
 ```
 
 
