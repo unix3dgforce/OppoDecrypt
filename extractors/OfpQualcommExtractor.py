@@ -4,7 +4,6 @@ import struct
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import BinaryIO, Callable
-from xml.etree.ElementTree import Element
 
 from core.interfaces import ILogService
 from core.models import OfpQualcommConfiguration, HashAlgorithmEnum
@@ -15,6 +14,7 @@ from .BaseExtractor import BaseExtractor
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
+__all__ = ["OfpQualcommExtractor"]
 
 CHUNK_SIZE = 0x1000
 XML_MAGIC = 0x7CEF
@@ -121,35 +121,7 @@ class OfpQualcommExtractor(BaseExtractor):
 
         return fd.read(length)
 
-    def run(self, fd: BinaryIO, output_dir: Path, file_size) -> None:
-        xml_data = self._decrypt_xml_data(self._find_xml_crypto_data(fd, file_size))
-
-        (pro_file_path := output_dir / "ProFile.xml").write_text(xml_data)
-        self.logger.debug(f"Save Profile in {pro_file_path}")
-
-        for job in self._parse_xml_section(xml_data):
-            dst_path = job.action(fd, output_dir, job.payload)
-
-            if job.payload.md5 and job.payload.md5 != "":
-                algorithm = HashAlgorithmEnum.Md5
-            elif job.payload.sha256 and job.payload.sha256 != "":
-                algorithm = HashAlgorithmEnum.Sha256
-            else:
-                self.logger.debug(f"Skip check checksum for {job.payload.filename}")
-                continue
-
-            try:
-                if Utils.validate_checksum(job.payload.__getattribute__(algorithm), dst_path, algorithm):
-                    self.logger.debug(f"Check {job.payload.filename} success! Algorithm {algorithm}: verified")
-                else:
-                    self.logger.error(f"{dst_path} hashes error. File might be broken!")
-            except UtilsNoSupportedHashAlgorithmError as error:
-                self.logger.error(error.message)
-
-            except UtilsFileNotFoundError as error:
-                self.logger.error(error.message)
-
-    def _parse_xml_item(self, element: Element) -> Payload:
+    def _parse_xml_item(self, element: ET.Element) -> Payload:
         payload = Payload()
 
         if value := element.attrib.get('Path', None):
@@ -204,6 +176,34 @@ class OfpQualcommExtractor(BaseExtractor):
                 result.append(Job(payload=payload, action=action))
 
         return result
+
+    def run(self, fd: BinaryIO, output_dir: Path, file_size) -> None:
+        xml_data = self._decrypt_xml_data(self._find_xml_crypto_data(fd, file_size))
+
+        (pro_file_path := output_dir / "ProFile.xml").write_text(xml_data)
+        self.logger.debug(f"Save Profile in {pro_file_path}")
+
+        for job in self._parse_xml_section(xml_data):
+            dst_path = job.action(fd, output_dir, job.payload)
+
+            if job.payload.md5 and job.payload.md5 != "":
+                algorithm = HashAlgorithmEnum.Md5
+            elif job.payload.sha256 and job.payload.sha256 != "":
+                algorithm = HashAlgorithmEnum.Sha256
+            else:
+                self.logger.debug(f"Skip check checksum for {job.payload.filename}")
+                continue
+
+            try:
+                if Utils.validate_checksum(job.payload.__getattribute__(algorithm), dst_path, algorithm):
+                    self.logger.debug(f"Check {job.payload.filename} success! Algorithm {algorithm}: verified")
+                else:
+                    self.logger.error(f"{dst_path} hashes error. File might be broken!")
+            except UtilsNoSupportedHashAlgorithmError as error:
+                self.logger.error(error.message)
+
+            except UtilsFileNotFoundError as error:
+                self.logger.error(error.message)
 
     def extract(self, input_file: Path, output_dir: Path) -> None:
         self.logger.information("Run Qualcomm extractor")
