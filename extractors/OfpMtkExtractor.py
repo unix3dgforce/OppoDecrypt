@@ -11,6 +11,7 @@ from .BaseExtractor import BaseExtractor
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
+__all__ = ["MtkExtractor"]
 
 HEADER_SIZE = 0x6C
 ENTRY_SIZE = 0x60
@@ -90,15 +91,6 @@ class MtkExtractor(BaseExtractor):
 
         raise MtkExtractorUnsupportedCryptoSettingsError
 
-    def run(self, fd: BinaryIO, output_dir: Path, file_size) -> None:
-        self._find_crypto_config(fd)
-        fd.seek(-HEADER_SIZE, io.SEEK_END)
-        header = Header(Utils.mtk_header_shuffle(fd.read(HEADER_SIZE)))
-
-        for entry in self._get_entries(fd, header, file_size):
-            self.logger.information(f"Extracting {entry.filename}")
-            self._write_to_file(fd, entry, output_dir)
-
     def _write_to_file(self, fd: BinaryIO, entry: Entry, output_dir: Path):
         fd.seek(entry.start_position, io.SEEK_SET)
         with open(output_dir / entry.filename, "wb") as out:
@@ -114,7 +106,16 @@ class MtkExtractor(BaseExtractor):
             for chunk in Utils.read_chunk(fd, entry.size):
                 out.write(chunk)
 
+    def run(self, fd: BinaryIO, output_dir: Path, file_size) -> None:
+        self._find_crypto_config(fd)
+        fd.seek(-HEADER_SIZE, io.SEEK_END)
+        header = Header(Utils.mtk_header_shuffle(fd.read(HEADER_SIZE)))
+
+        for entry in self._get_entries(fd, header, file_size):
+            self.logger.information(f"Extracting {entry.filename}")
+            self._write_to_file(fd, entry, output_dir)
+
     def extract(self, input_file: Path, output_dir: Path) -> None:
-        self.logger.information("Run Mtk extractors")
+        self.logger.information("Run Mtk extractor")
 
         super().extract(input_file, output_dir)

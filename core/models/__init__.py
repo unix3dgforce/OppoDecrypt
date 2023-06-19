@@ -1,6 +1,7 @@
 from .configuration.CryptoCredential import CryptoCredential
 from .configuration.OfpMtkConfiguration import OfpMtkConfiguration
 from .configuration.OfpQualcommConfiguration import OfpQualcommConfiguration
+from .configuration.OpsConfiguration import OpsConfiguration
 from .enums.CpuSupportEnum import CpuSupportEnum
 from .enums.HashAlgorithmEnum import HashAlgorithmEnum
 from .enums.LogLevel import LogLevel

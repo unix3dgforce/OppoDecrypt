@@ -1,13 +1,13 @@
 from dependency_injector import containers, providers
 from services import ExtractService, LoguruLoggingService
-from extractors import OfpQualcommExtractor, MtkExtractor
+from extractors import OfpQualcommExtractor, MtkExtractor, OpsExtractor
 from core.models import CpuSupportEnum
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 
 OFP_PREFIX = "ofp"
-OSP_PREFIX = "ops"
+OPS_PREFIX = "ops"
 
 
 class ApplicationContainer(containers.DeclarativeContainer):
@@ -29,6 +29,17 @@ class ApplicationContainer(containers.DeclarativeContainer):
             f"{OFP_PREFIX}_{CpuSupportEnum.MTK.value}": providers.Factory(
                 MtkExtractor,
                 configuration=configuration.extractors.ofp_mtk,
+                logger=logging
+            ),
+
+            f"{OPS_PREFIX}_{CpuSupportEnum.QC.value}": providers.Factory(
+                OpsExtractor,
+                configuration=configuration.extractors.ops,
+                logger=logging
+            ),
+            f"{OPS_PREFIX}_{CpuSupportEnum.MTK.value}": providers.Factory(
+                OpsExtractor,
+                configuration=configuration.extractors.ops,
                 logger=logging
             ),
 

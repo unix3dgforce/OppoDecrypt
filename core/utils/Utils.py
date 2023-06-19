@@ -1,7 +1,7 @@
 import hashlib
 import io
 from pathlib import Path
-from typing import BinaryIO
+from typing import BinaryIO, Callable
 
 from core.models.enums.HashAlgorithmEnum import HashAlgorithmEnum
 from exceptions import UtilsNoSupportedHashAlgorithmError, UtilsFileNotFoundError
@@ -51,23 +51,29 @@ class Utils:
                 buffer_size = length
 
     @staticmethod
-    def validate_checksum(checksum: str, dst: Path, algorithm: HashAlgorithmEnum) -> bool:
-        match algorithm:
-            case HashAlgorithmEnum.Md5:
-                alg = hashlib.md5()
-            case HashAlgorithmEnum.Sha256:
-                alg = hashlib.sha256()
-            case _:
-                raise UtilsNoSupportedHashAlgorithmError()
+    def validate_checksum(checksum: str, dst: Path, algorithm: HashAlgorithmEnum, fill_func: Callable[[int], bytes] = None) -> bool:
+        def hash_instance():
+            match algorithm:
+                case HashAlgorithmEnum.Md5:
+                    _alg = hashlib.md5
+                case HashAlgorithmEnum.Sha256:
+                    _alg = hashlib.sha256
+                case _:
+                    raise UtilsNoSupportedHashAlgorithmError()
+            return _alg()
 
         if not dst or not dst.exists():
             raise UtilsFileNotFoundError(dst)
 
         with open(dst, 'rb') as fd:
             for read_bytes in [0x40000, dst.stat().st_size]:
+                alg = hash_instance()
                 fd.seek(io.SEEK_SET)
                 for chunk in Utils.read_chunk(fd, read_bytes):
                     alg.update(chunk)
+
+                if fill_func and (fill := fill_func(dst.stat().st_size)):
+                    alg.update(fill)
 
                 if checksum == alg.hexdigest():
                     return True
