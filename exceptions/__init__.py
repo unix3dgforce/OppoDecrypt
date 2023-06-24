@@ -3,6 +3,7 @@ from .extractors.MtkExtractorExceptions import MtkExtractorUnsupportedCryptoSett
 from .extractors.OpsExtractorExceptions import OpsExtractorUnsupportedCryptoSettingsError
 from .extractors.QualcommExtractorExceptions import QualcommExtractorXMLSectionNotFoundError, \
     QualcommExtractorUnsupportedCryptoSettingsError
+from .extractors.SparseExtractorExceptions import SparseExtractorNotSparseImageError
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'

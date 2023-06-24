@@ -1,6 +1,7 @@
 import sys
 
 from core.interfaces import IExtractor, IBaseExtractService, ILogService
+from core.models import PayloadModel
 from core.utils import ExitCode
 from exceptions import QualcommExtractorUnsupportedCryptoSettingsError, QualcommExtractorXMLSectionNotFoundError, \
     MtkExtractorUnsupportedCryptoSettingsError
@@ -19,9 +20,15 @@ class ExtractService(IBaseExtractService):
             if not (cpu := kwargs.pop('cpu', None)):
                 self._logger.error(f"Unsupported cpu type")
                 sys.exit(ExitCode.USAGE)
+
             prefix = kwargs.get("input_file").suffix[1:]
 
-            self._extractors[f"{prefix}_{cpu}"].extract(**kwargs)
+            extractor = self._extractors[f"{prefix}_{cpu}"]
+            if kwargs.pop("sparse"):
+                extractor.set_next_extractor(self._extractors.get('sparse'))
+
+            extractor.run(PayloadModel(**kwargs))
+
         except (QualcommExtractorUnsupportedCryptoSettingsError,
                 QualcommExtractorXMLSectionNotFoundError,
                 MtkExtractorUnsupportedCryptoSettingsError) as error:

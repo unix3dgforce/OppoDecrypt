@@ -127,3 +127,4 @@ dmypy.json
 .idea/
 /.idea/
 /poetry.lock
+playground.py
