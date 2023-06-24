@@ -27,18 +27,9 @@ Usage:
 * Extract oppo ofp file:
 
 ```
-python3 OppoDecrypt --cpu {qualcomm,mtk} [--debug | --no-debug] [file.ofp | file.ops] [directory to extract]
+python3 OppoDecrypt --cpu {qualcomm,mtk} [--debug | --no-debug] [--sparse | --no-sparse] [file.ofp | file.ops] [directory to extract]
 ```
 
-
-* Merge super images:
-
-The .ofp may contain super firmware from multiple carriers, check the super_map.csv.txt outside .ofp first.
-
-```
-sudo apt install simg2img # If you have already installed, skip this step.
-simg2img [super.0.xxxxxxxx.img] [super.1.xxxxxxxx.img] [super.1.xxxxxxxx.img] [filename to merge] # All split super imgs must be the same carrier
-```
 
 Thanks:
 -------- 

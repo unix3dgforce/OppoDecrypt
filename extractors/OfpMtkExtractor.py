@@ -3,8 +3,9 @@ import struct
 from pathlib import Path
 from typing import BinaryIO
 
+from core.decorators import CheckOutputFolder
 from core.interfaces import ILogService
-from core.models import OfpMtkConfiguration
+from core.models import OfpMtkConfiguration, PayloadModel
 from core.utils import Crypto, Utils
 from exceptions import MtkExtractorUnsupportedCryptoSettingsError
 from .BaseExtractor import BaseExtractor
@@ -17,7 +18,7 @@ HEADER_SIZE = 0x6C
 ENTRY_SIZE = 0x60
 
 
-class Header:
+class _Header:
     def __init__(self, buffer):
         fmt = "46sQ4s7s5sH32sH"
         (
@@ -41,7 +42,7 @@ class Header:
         return data.replace(b"\x00", b"").decode('utf-8')
 
 
-class Entry:
+class _Entry:
     def __init__(self, buffer):
         fmt = "32sQQQ32sQ"
         (
@@ -67,14 +68,14 @@ class MtkExtractor(BaseExtractor):
         self._configuration = OfpMtkConfiguration(**configuration)
 
     @staticmethod
-    def _get_entries(fd: BinaryIO, header: Header, file_size: int):
+    def _get_entries(fd: BinaryIO, header: _Header, file_size: int):
         result = []
         fd.seek(file_size - HEADER_SIZE - header.entries_count * ENTRY_SIZE, io.SEEK_SET)
 
         data = Utils.mtk_header_shuffle(fd.read(header.entries_count * ENTRY_SIZE), header_size=header.entries_count * ENTRY_SIZE)
 
         for entries in range(0, header.entries_count):
-            entry = Entry(data[entries * ENTRY_SIZE: (entries * ENTRY_SIZE) + ENTRY_SIZE])
+            entry = _Entry(data[entries * ENTRY_SIZE: (entries * ENTRY_SIZE) + ENTRY_SIZE])
             result.append(entry)
 
         return result
@@ -91,7 +92,7 @@ class MtkExtractor(BaseExtractor):
 
         raise MtkExtractorUnsupportedCryptoSettingsError
 
-    def _write_to_file(self, fd: BinaryIO, entry: Entry, output_dir: Path):
+    def _write_to_file(self, fd: BinaryIO, entry: _Entry, output_dir: Path):
         fd.seek(entry.start_position, io.SEEK_SET)
         with open(output_dir / entry.filename, "wb") as out:
             if entry.crypto_size > 0:
@@ -106,16 +107,19 @@ class MtkExtractor(BaseExtractor):
             for chunk in Utils.read_chunk(fd, entry.size):
                 out.write(chunk)
 
-    def run(self, fd: BinaryIO, output_dir: Path, file_size) -> None:
+    @CheckOutputFolder
+    def extract(self, fd: BinaryIO, output_dir: Path, file_size) -> PayloadModel:
         self._find_crypto_config(fd)
         fd.seek(-HEADER_SIZE, io.SEEK_END)
-        header = Header(Utils.mtk_header_shuffle(fd.read(HEADER_SIZE)))
+        header = _Header(Utils.mtk_header_shuffle(fd.read(HEADER_SIZE)))
 
         for entry in self._get_entries(fd, header, file_size):
             self.logger.information(f"Extracting {entry.filename}")
             self._write_to_file(fd, entry, output_dir)
 
-    def extract(self, input_file: Path, output_dir: Path) -> None:
+        return PayloadModel(output_dir=output_dir)
+
+    def run(self, payload: PayloadModel) -> PayloadModel:
         self.logger.information("Run Mtk extractor")
 
-        super().extract(input_file, output_dir)
+        return super().run(payload)

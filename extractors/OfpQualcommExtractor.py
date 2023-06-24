@@ -5,8 +5,9 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import BinaryIO, Callable
 
+from core.decorators import CheckOutputFolder
 from core.interfaces import ILogService
-from core.models import OfpQualcommConfiguration, HashAlgorithmEnum
+from core.models import OfpQualcommConfiguration, HashAlgorithmEnum, PayloadModel
 from core.utils import Crypto, Utils
 from exceptions import QualcommExtractorXMLSectionNotFoundError, QualcommExtractorUnsupportedCryptoSettingsError, \
     UtilsNoSupportedHashAlgorithmError, UtilsFileNotFoundError
@@ -177,7 +178,8 @@ class OfpQualcommExtractor(BaseExtractor):
 
         return result
 
-    def run(self, fd: BinaryIO, output_dir: Path, file_size) -> None:
+    @CheckOutputFolder
+    def extract(self, fd: BinaryIO, output_dir: Path, file_size) -> PayloadModel:
         xml_data = self._decrypt_xml_data(self._find_xml_crypto_data(fd, file_size))
 
         (pro_file_path := output_dir / "ProFile.xml").write_text(xml_data)
@@ -205,7 +207,9 @@ class OfpQualcommExtractor(BaseExtractor):
             except UtilsFileNotFoundError as error:
                 self.logger.error(error.message)
 
-    def extract(self, input_file: Path, output_dir: Path) -> None:
+        return PayloadModel(output_dir=output_dir)
+
+    def run(self, payload: PayloadModel) -> PayloadModel:
         self.logger.information("Run Qualcomm extractor")
 
-        super().extract(input_file, output_dir)
+        return super().run(payload)
