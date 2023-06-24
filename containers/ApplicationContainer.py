@@ -1,7 +1,8 @@
 from dependency_injector import containers, providers
-from services import ExtractService, LoguruLoggingService
-from extractors import OfpQualcommExtractor, MtkExtractor, OpsExtractor
+
 from core.models import CpuSupportEnum
+from extractors import OfpQualcommExtractor, MtkExtractor, OpsExtractor, SparseExtractor
+from services import ExtractService, LoguruLoggingService
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
@@ -42,6 +43,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
                 configuration=configuration.extractors.ops,
                 logger=logging
             ),
+            "sparse": providers.Factory(
+                SparseExtractor,
+                logger=logging
+            )
 
         }),
         logger=logging

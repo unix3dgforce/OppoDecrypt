@@ -4,8 +4,9 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import BinaryIO, Tuple, Callable
 
+from core.decorators import CheckOutputFolder
 from core.interfaces import ILogService
-from core.models import CryptoCredential, HashAlgorithmEnum, OpsConfiguration
+from core.models import CryptoCredential, HashAlgorithmEnum, OpsConfiguration, PayloadModel
 from core.utils import Crypto, Utils
 from exceptions import OpsExtractorUnsupportedCryptoSettingsError, UtilsNoSupportedHashAlgorithmError, UtilsFileNotFoundError
 from .BaseExtractor import BaseExtractor
@@ -20,7 +21,7 @@ HEADER_SIZE = 0x200
 
 
 @dataclasses.dataclass
-class Payload:
+class _Payload:
     sha256: str = None
     filename: str = None
     start_position: int = -1
@@ -30,13 +31,13 @@ class Payload:
 
 
 @dataclasses.dataclass
-class Job:
-    payload: Payload = None
+class _Job:
+    payload: _Payload = None
     action: Callable = None
 
 
 class OpsExtractor(BaseExtractor):
-    KEY = struct.unpack("<4I", bytes.fromhex("d1b5e39e5eea049d671dd5abd2afcbaf"))
+    _KEY = struct.unpack("<4I", bytes.fromhex("d1b5e39e5eea049d671dd5abd2afcbaf"))
 
     def __init__(self, configuration: dict[str, any], logger: ILogService):
         self._configuration = OpsConfiguration(**configuration)
@@ -51,8 +52,8 @@ class OpsExtractor(BaseExtractor):
         return fd.read(xml_length + (HEADER_SIZE - (xml_length % HEADER_SIZE))), xml_length
 
     @staticmethod
-    def _parse_xml_item(element: ET.Element) -> Payload:
-        payload = Payload()
+    def _parse_xml_item(element: ET.Element) -> _Payload:
+        payload = _Payload()
 
         if value := element.attrib.get('Path', None):
             payload.filename = value
@@ -79,7 +80,7 @@ class OpsExtractor(BaseExtractor):
             fill_size = 0x1000 - (file_size % 0x1000)
             return struct.pack(f"<{fill_size}B", *([0] * fill_size))
 
-    def _copy(self, fd: BinaryIO, output_dir: Path, payload: Payload) -> Path:
+    def _copy(self, fd: BinaryIO, output_dir: Path, payload: _Payload) -> Path:
         self.logger.information(f"Extracting {payload.filename}")
         fd.seek(payload.start_position)
         with open((dst_file := output_dir / payload.filename), 'wb') as out:
@@ -88,7 +89,7 @@ class OpsExtractor(BaseExtractor):
 
         return dst_file
 
-    def _decrypt_file(self, fd: BinaryIO, output_dir: Path, payload: Payload) -> Path:
+    def _decrypt_file(self, fd: BinaryIO, output_dir: Path, payload: _Payload) -> Path:
         self.logger.information(f"Extracting {payload.filename}")
         fd.seek(payload.start_position)
         crypto_data = fd.read(payload.length)
@@ -106,7 +107,7 @@ class OpsExtractor(BaseExtractor):
         out = bytearray()
         crypto_data = bytearray(crypto_data)
         length = len(crypto_data)
-        custom_key = self.KEY
+        custom_key = self._KEY
         mbox = struct.unpack("62B", crypto_config.key)
         if length > 0xF:
             for ptr in range(0, length, 0x10):
@@ -128,7 +129,7 @@ class OpsExtractor(BaseExtractor):
         raise OpsExtractorUnsupportedCryptoSettingsError
 
     def _parse_xml_section(self, xml_data: str):
-        result: list[Job] = list()
+        result: list[_Job] = list()
         root = ET.fromstring(xml_data)
         for child in root:
             for item in child:
@@ -139,7 +140,7 @@ class OpsExtractor(BaseExtractor):
                         if not payload.filename or payload.start_position == -1:
                             continue
 
-                        result.append(Job(payload=payload, action=self._copy))
+                        result.append(_Job(payload=payload, action=self._copy))
 
                 payload = self._parse_xml_item(item)
 
@@ -151,11 +152,12 @@ class OpsExtractor(BaseExtractor):
                 else:
                     action = self._copy
 
-                result.append(Job(payload=payload, action=action))
+                result.append(_Job(payload=payload, action=action))
 
         return result
 
-    def run(self, fd: BinaryIO, output_dir: Path, file_size):
+    @CheckOutputFolder
+    def extract(self, fd: BinaryIO, output_dir: Path, file_size):
         xml_data = self._decrypt_xml_data(*self._find_xml_crypto_data(fd, file_size))
 
         (pro_file_path := output_dir / "settings.xml").write_text(xml_data)
@@ -182,7 +184,10 @@ class OpsExtractor(BaseExtractor):
             except UtilsFileNotFoundError as error:
                 self.logger.error(error.message)
 
-    def extract(self, input_file: Path, output_dir: Path) -> None:
+        return PayloadModel(output_dir=output_dir)
+
+    def run(self, payload: PayloadModel) -> PayloadModel:
         self.logger.information("Run OPS extractor")
 
-        super().extract(input_file, output_dir)
+        return super().run(payload)
+
