@@ -25,7 +25,7 @@ class ExtractService(IBaseExtractService):
 
             extractor = self._extractors[f"{prefix}_{cpu}"]
             if kwargs.pop("sparse"):
-                extractor.set_next_extractor(self._extractors.get('sparse'))
+                extractor.set_next_extractor(self._extractors.get('sparse')).set_next_extractor(self._extractors.get('super'))
 
             extractor.run(PayloadModel(**kwargs))
 
