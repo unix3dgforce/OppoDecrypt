@@ -177,5 +177,9 @@ class SparseExtractor(BaseExtractor):
             self.logger.error(error.message)
         finally:
             payload.input_file = payload.input_file.pop(0)
+
+            if self.next_extractor:
+                return self._next_extractor.run(payload)
+
             return payload
 
