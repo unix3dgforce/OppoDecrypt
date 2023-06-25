@@ -1,7 +1,7 @@
 from dependency_injector import containers, providers
 
 from core.models import CpuSupportEnum
-from extractors import OfpQualcommExtractor, MtkExtractor, OpsExtractor, SparseExtractor
+from extractors import OfpQualcommExtractor, MtkExtractor, OpsExtractor, SparseExtractor, SuperImgExtractor
 from services import ExtractService, LoguruLoggingService
 
 __author__ = 'MiuiPro.info DEV Team'
@@ -45,6 +45,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
             ),
             "sparse": providers.Factory(
                 SparseExtractor,
+                logger=logging
+            ),
+            "super": providers.Factory(
+                SuperImgExtractor,
                 logger=logging
             )
 
