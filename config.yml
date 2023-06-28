@@ -69,6 +69,7 @@ extractors:
 log:
   handlers:
     - sink: !func sys.stdout
-      format: '{time:%Y-%m-%d %H:%M:%S} | {level} | <lvl>{message}</lvl>'
+      format: '| <lvl>{level}</lvl> | <lvl>{message}</lvl>'
       level: 'INFO'
       enqueue: true
+      colorize: true

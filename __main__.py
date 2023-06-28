@@ -47,7 +47,7 @@ def load_yaml_configuration() -> dict:
 
 def set_debug_mode(handlers: dict[Any, Any]) -> dict[Any, Any]:
     for item in configuration['log']['handlers']:
-        item.update({'level': 'DEBUG'})
+        item.update({'level': 'DEBUG', 'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> ' + item['format']})
 
     return handlers
 
@@ -60,7 +60,7 @@ def main(service: IBaseExtractService = Provide[ApplicationContainer.extract_ser
 def create_parser() -> argparse.ArgumentParser:
     _parser = argparse.ArgumentParser(
         prog="OppoDecrypt",
-        description=f"OppoDecrypt - command-line tool for extracting partition images from .ofp"
+        description=f"OppoDecrypt - command-line tool for extracting partition images from .ofp or .ops"
     )
 
     _parser.add_argument(
