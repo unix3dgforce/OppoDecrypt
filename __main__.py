@@ -96,6 +96,13 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     _parser.add_argument(
+        "--gui",
+        type=bool,
+        default=False,
+        action=argparse.BooleanOptionalAction
+    )
+
+    _parser.add_argument(
         "INPUT_FILE",
         type=Path,
         action=ExtensionsAction,

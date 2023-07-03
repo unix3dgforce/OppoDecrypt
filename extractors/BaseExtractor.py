@@ -4,7 +4,7 @@ import abc
 from pathlib import Path
 from typing import BinaryIO
 
-from core.interfaces import IExtractor, ILogService
+from core.interfaces import IExtractor, ILogService, IUserInterface
 from core.models import CryptoCredential, PayloadModel
 
 __author__ = 'MiuiPro.info DEV Team'
@@ -17,6 +17,15 @@ class BaseExtractor(IExtractor):
     def __init__(self, logger: ILogService):
         self.crypto_config: CryptoCredential | None = None
         self.logger = logger
+        self._user_interface: IUserInterface = None
+
+    @property
+    def user_interface(self) -> IUserInterface:
+        return self._user_interface
+
+    @user_interface.setter
+    def user_interface(self, value: IUserInterface) -> None:
+        self._user_interface = value
 
     @property
     def next_extractor(self) -> IExtractor:

@@ -4,11 +4,8 @@ import struct
 from pathlib import Path
 from typing import BinaryIO
 
-from cli import Cli
-from core.decorators import ConfirmationExecution
 from core.interfaces import ILogService
 from core.models import SparseChunkTypeEnum, PayloadModel
-from core.utils import Utils
 from exceptions import SparseExtractorNotSparseImageError
 from extractors.BaseExtractor import BaseExtractor
 
@@ -129,8 +126,10 @@ class SparseExtractor(BaseExtractor):
 
         return PayloadModel(input_file=dst_path, output_dir=output_dir)
 
-    @ConfirmationExecution("Run conversion to non sparse image?")
     def run(self, payload: PayloadModel) -> PayloadModel:
+        if not self.user_interface.launch_confirmation("Run conversion to non sparse image?", payload):
+            return payload
+
         if isinstance(payload.input_file, Path) and not payload.input_file.exists():
             raise FileNotFoundError
 
@@ -151,9 +150,7 @@ class SparseExtractor(BaseExtractor):
                 payload.input_file = find_images
             else:
                 self.logger.information(f"Multiple files found")
-                csv_path = Cli.get_super_map_path(find_images)
-                choices = Utils.parse_csv_file(csv_path, find_images)
-                payload.input_file = Cli.get_choice_build_configuration(choices)
+                payload.input_file = self.user_interface.choice_build_configuration(find_images)
         else:
             raise AttributeError
         self.logger.information("Run sparse extractor")
