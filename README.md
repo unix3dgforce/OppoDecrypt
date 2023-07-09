@@ -22,14 +22,28 @@ In the console, run
 poetry install
 ```
 
-Usage:
+Usage CLI:
 -------- 
-* Extract oppo ofp file:
+* Extract ops/ofp file:
 
 ```
 python3 OppoDecrypt --cpu {qualcomm,mtk} [--debug | --no-debug] [--sparse | --no-sparse] [file.ofp | file.ops] [directory to extract]
 ```
 
+Run GUI:
+-------- 
+* Extract ops/ofp file:
+
+```
+python3 OppoDecrypt --gui
+```
+
+GUI:
+--------
+![](.images/main.jpg)
+![](.images/select_configuration.jpg)
+![](.images/extract_partitions.jpg)
+![](.images/done.jpg)
 
 Thanks:
 -------- 

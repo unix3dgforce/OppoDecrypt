@@ -1,0 +1,18 @@
+<p style="margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">
+<span style="font-size:8pt; font-weight:600;{% if dark_mode == true %} color:#bbbbbb; {% else %} color:#000; {% endif %}">
+[<span style="font-weight:800; {% if dark_mode == true %} color:#299999; {% else %} color:#29992b; {% endif %}">{{time.strftime("%H:%M:%S.%f")}}</span>]
+{%- if level == LogLevel.Debug -%}
+    <span style="font-weight:600; white-space:pre;{% if dark_mode == true %}color:#5394ec;{% else %}color:#1170f1;{% endif %}">
+{%- elif level == LogLevel.Info -%}
+    <span style="font-weight:600; white-space:pre;{% if dark_mode == true %}color:#bbbbbb;{% else %}color:#626262;{% endif %}">
+{%- elif level == LogLevel.Warning -%}
+    <span style=" font-weight:600; white-space:pre;{% if dark_mode == true %}color:#d6bf55;{% else %}color:#c69e0f;{% endif %}">
+{%- elif level == LogLevel.Error -%}
+    <span style="font-weight:600; white-space:pre;{% if dark_mode == true %}color:#ff6b68;{% else %}color:#e51f1b;{% endif %}">
+{%- elif level == LogLevel.Critical -%}
+    <span style="font-weight:600; white-space:pre;{% if dark_mode == true %}background-color: #fd6a68; color:#1a1a1a;{% else %}background-color: #e31f1c; color:#e7e7e7;{% endif %}">
+{%- else -%}
+    <span>
+{% endif %}
+ {{text}}</span></span>
+</p>

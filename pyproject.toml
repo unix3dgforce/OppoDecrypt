@@ -14,6 +14,9 @@ pyyaml = "^6.0"
 pycryptodome = "^3.18.0"
 pycryptodomex = "^3.18.0"
 inquirerpy = "^0.3.4"
+qasync = "^0.24.0"
+pyqt6 = "^6.5.1"
+jinja2 = "^3.1.2"
 
 
 [build-system]

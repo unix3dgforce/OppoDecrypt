@@ -5,6 +5,7 @@ from .extractors.QualcommExtractorExceptions import QualcommExtractorXMLSectionN
     QualcommExtractorUnsupportedCryptoSettingsError
 from .extractors.SparseExtractorExceptions import SparseExtractorNotSparseImageError
 from .extractors.SuperImgExtractorExceptions import SuperImgExtractorError
+from .validators.SupersImgCompareCsvGuiExceptions import ValidationError
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'

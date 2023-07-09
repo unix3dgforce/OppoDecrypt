@@ -85,22 +85,10 @@ class Utils:
         return False
 
     @staticmethod
-    def parse_csv_file(csv_file_path: Path, input_files: list[Path]) -> list[Choice]:
+    def parse_csv_file(csv_file_path: Path) -> list[CsvRecordModel]:
         if csv_file_path.suffix.lower() != ".csv":
             raise AttributeError
 
-        choices = []
         with open(csv_file_path, newline='') as fd:
-            csv_reader = csv.DictReader(fd)
-            for index, row in enumerate(csv_reader, start=1):
-                record_model = CsvRecordModel(init_value=row)
-                choices.append(
-                    Choice(
-                        value=[item for item in input_files if item.name in record_model.images],
-                        name=f"{index}. [0x{record_model.id:02X}] {record_model.name}",
-                        enabled=False
-                    )
-                )
-
-        return choices
+            return [CsvRecordModel(init_value=row)for row in csv.DictReader(fd)]
 

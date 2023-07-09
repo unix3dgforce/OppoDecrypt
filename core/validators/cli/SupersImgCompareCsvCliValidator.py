@@ -7,9 +7,9 @@ __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 
 
-class SupersImgCompareCsvValidator(Validator):
-    _suffix = '.csv'
-    _search_pattern = 'super_'
+class SupersImgCompareCsvCliValidator(Validator):
+    _suffix = ".csv"
+    _search_pattern = "super_"
     
     def __init__(
             self,
@@ -55,6 +55,6 @@ class SupersImgCompareCsvValidator(Validator):
 
                 if item not in check_names:
                     raise ValidationError(
-                        message='The selected file does not match',
+                        message="The selected file does not match",
                         cursor_position=document.cursor_position,
                     )

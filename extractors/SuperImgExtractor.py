@@ -5,10 +5,6 @@ import typing
 from pathlib import Path
 from typing import BinaryIO, Any
 
-from InquirerPy.base import Choice
-
-from cli import Cli
-from core.decorators import ConfirmationExecution
 from core.interfaces import ILogService
 from core.models import PayloadModel
 from core.models.super import MetadataHeaderModel, MetadataGeometryModel, MetadataPartitionModel, MetadataExtentModel, \
@@ -207,8 +203,10 @@ class SuperImgExtractor(BaseExtractor):
             extract_files.append(out_path)
         return PayloadModel(input_file=extract_files if extract_files else None, output_dir=output_dir)
 
-    @ConfirmationExecution("Run extract partitions image from super partition?", forced=True)
     def run(self, payload: PayloadModel) -> PayloadModel:
+        if not self.user_interface.launch_confirmation("Run extract partition from super.img", payload, forced=True):
+            return payload
+
         if payload.input_file is None:
             return payload
 
@@ -220,7 +218,7 @@ class SuperImgExtractor(BaseExtractor):
 
         out_folder.mkdir(parents=True, exist_ok=True)
 
-        payload.output_dir = Cli.get_extract_folder(out_folder)
+        payload.output_dir = self.user_interface.get_custom_extract_folder(out_folder)
 
         try:
             with open(payload.input_file, 'rb') as fd:
@@ -229,15 +227,7 @@ class SuperImgExtractor(BaseExtractor):
                 if self._metadata.partitions is None:
                     raise SuperImgExtractorError("Partitions not found")
 
-                choices = [Choice(value=self._metadata.partitions, name="All", enabled=True)]
-                choices.extend([
-                    Choice(
-                        value=item,
-                        name=item.name[:-2] if item.name.endswith(("_a", "_b")) else item.name,
-                        enabled=False
-                    ) for item in self._metadata.partitions if item.num_extents != 0])
-                self._metadata.partitions = Cli.get_choice_extraction_partitions(choices)
-
+                self._metadata.partitions = self.user_interface.choice_extraction_partitions(self._metadata.partitions)
                 payload = self.extract(fd, payload.output_dir, payload.input_file.stat().st_size)
         except SuperImgExtractorError as error:
             self.logger.error(error.message)
