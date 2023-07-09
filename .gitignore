@@ -128,3 +128,5 @@ dmypy.json
 /.idea/
 /poetry.lock
 playground.py
+/ui/gui/views/MainView.ui
+/ui/gui/views/AboutView.ui

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Callable
 
 from loguru import logger
 
@@ -12,6 +12,14 @@ __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 class LoguruLoggingService(ILogService):
     def __init__(self, configuration: dict[Any: Any]):
         self._logger_id = logger.configure(**configuration)
+
+    @property
+    def get_current_logger(self):
+        return logger
+
+    @classmethod
+    def add_logger_sink(cls, func: Callable, **kwargs):
+        logger.add(func, **kwargs)
 
     @classmethod
     def log(cls, level: LogLevel, message: str, exception: Exception = None):

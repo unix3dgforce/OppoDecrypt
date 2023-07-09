@@ -8,6 +8,8 @@ from .enums.CpuSupportEnum import CpuSupportEnum
 from .enums.HashAlgorithmEnum import HashAlgorithmEnum
 from .enums.LogLevel import LogLevel
 from .enums.SparseChunkTypeEnum import SparseChunkTypeEnum
+from .ConfigurationModel import ConfigurationModel
+from .LogMessageModel import LogMessageModel
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'

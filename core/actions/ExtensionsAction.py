@@ -15,6 +15,9 @@ class ExtensionsAction(argparse.Action):
         super(ExtensionsAction, self).__init__(*args, **kwargs)
 
     def __call__(self, parser, namespace, values: Path, option_string=None):
+        if values is None:
+            return values
+
         if values.suffix[1:] not in self._extensions:
             parser.error(f"file doesn't end with one of [{self._extensions}]")
         else:

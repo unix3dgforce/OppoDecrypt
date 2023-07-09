@@ -1,4 +1,6 @@
 import abc
+from typing import Callable
+
 from core.models import LogLevel
 
 __author__ = 'MiuiPro.info DEV Team'
@@ -6,6 +8,17 @@ __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 
 
 class ILogService(metaclass=abc.ABCMeta):
+
+    @property
+    @abc.abstractmethod
+    def get_current_logger(self):
+        """Get Logger"""
+
+    @classmethod
+    @abc.abstractmethod
+    def add_logger_sink(cls, func: Callable, **kwargs):
+        """Add logger sink"""
+
     @classmethod
     @abc.abstractmethod
     def log(cls, level: LogLevel, message: str, exception: Exception = None):
