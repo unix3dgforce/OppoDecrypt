@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal, QObject
 from PyQt6.QtGui import QPalette, QColor
 from PyQt6.QtWidgets import QApplication
 
@@ -6,11 +6,19 @@ __author__ = "MiuiPro.info DEV Team"
 __copyright__ = "Copyright (c) 2023 MiuiPro.info"
 
 
-class ThemasController:
+class ThemasController(QObject):
+    change_palette = pyqtSignal()
+
     def __init__(self, app: QApplication):
+        super().__init__()
         self._app = app
         self._light_palette: QPalette = self._app.palette()
         self._dark_mode_palette: QPalette = self._get_dark_mode_palette()
+        self._dark = False
+
+    @property
+    def is_dark(self):
+        return self._dark
 
     @classmethod
     def _get_dark_mode_palette(cls) -> QPalette:
@@ -32,4 +40,6 @@ class ThemasController:
         return palette
 
     def dark_mode(self, switch: bool) -> None:
+        self._dark = switch
         self._app.setPalette(self._dark_mode_palette if switch else self._light_palette)
+        self.change_palette.emit()

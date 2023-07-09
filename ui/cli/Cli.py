@@ -9,7 +9,7 @@ from core.interfaces import IUserInterface
 from core.models import PayloadModel
 from core.models.super import MetadataPartitionModel
 from core.utils import Utils
-from core.validators import SupersImgCompareCsvValidator
+from core.validators import SupersImgCompareCsvCliValidator
 
 __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
@@ -23,20 +23,20 @@ class Cli(IUserInterface):
         else:
             return True
 
-    def get_super_map_path(self, input_files: list[Path], default_path: Path = None) -> Path:
+    def get_super_map_path(self, input_files: list[Path], default_path: Path) -> Path:
         return inquirer.filepath(
             message="Enter super_map.csv file path",
-            validate=SupersImgCompareCsvValidator(list_files=input_files, message="Input file is not a valid"),
+            validate=SupersImgCompareCsvCliValidator(list_files=input_files, message="Input file is not a valid"),
             only_files=True,
             mandatory=True,
             filter=lambda result: Path(result).resolve()
         ).execute()
 
-    def choice_build_configuration(self, input_files: list[Path], default_path: Path = None) -> list[Path]:
+    def choice_build_configuration(self, input_files: list[Path], default_path: Path) -> list[Path]:
         csv_records = Utils.parse_csv_file(self.get_super_map_path(input_files, default_path))
 
         return inquirer.select(
-            message="Select build:",
+            message="Select configuration build:",
             choices=[
                 Choice(
                     value=[item for item in input_files if item.name in record.images],

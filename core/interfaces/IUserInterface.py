@@ -11,7 +11,7 @@ __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 class IUserInterface:
 
     @abc.abstractmethod
-    def choice_build_configuration(self, input_files: list[Path], default_path: Path = None) -> list[Path]:
+    def choice_build_configuration(self, input_files: list[Path], default_path: Path) -> list[Path]:
         """ Get build configuration """
 
     @abc.abstractmethod
@@ -19,7 +19,7 @@ class IUserInterface:
         """ Get list extract partitions """
 
     @abc.abstractmethod
-    def get_super_map_path(self, input_files: list[Path], default_path: Path = None) -> Path:
+    def get_super_map_path(self, input_files: list[Path], default_path: Path) -> Path:
         """ Get path to super_map.csv file """
 
     @abc.abstractmethod

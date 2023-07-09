@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QCoreApplication, QRect, QSize
 from PyQt6.QtGui import QAction, QIcon, QPixmap
 from PyQt6.QtWidgets import QMainWindow, QMenuBar, QMenu, QWidget, QGroupBox, QLabel, QStatusBar, QComboBox, QLineEdit, QToolButton, \
-    QPushButton, QTextEdit
+    QPushButton, QTextEdit, QTextBrowser
 
 from ui.gui.views import BaseView
 
@@ -20,6 +20,7 @@ class MainView(BaseView):
         self.menu_help_action: QAction | None = None
         self.label_cpu_type: QLabel | None = None
         self.statusbar: QStatusBar | None = None
+        self.group_box: QGroupBox | None = None
         self.combobox_cpu_type: QComboBox | None = None
         self.label_input_path: QLabel | None = None
         self.input_path: QLineEdit | None = None
@@ -77,45 +78,45 @@ class MainView(BaseView):
         central_widget = QWidget(self.main)
         central_widget.setObjectName("central_widget")
 
-        group_box = QGroupBox(central_widget)
-        group_box.setGeometry(QRect(5, 5, 570, 110))
-        group_box.setObjectName("group_box")
+        self.group_box = QGroupBox(central_widget)
+        self.group_box.setGeometry(QRect(5, 5, 570, 110))
+        self.group_box.setObjectName("group_box")
 
-        self.label_cpu_type = QLabel(group_box)
+        self.label_cpu_type = QLabel(self.group_box)
         self.label_cpu_type.setGeometry(QRect(10, 10, 100, 20))
         self.label_cpu_type.setObjectName("label_cpu_type")
 
-        self.combobox_cpu_type = QComboBox(group_box)
+        self.combobox_cpu_type = QComboBox(self.group_box)
         self.combobox_cpu_type.setGeometry(QRect(110, 10, 100, 20))
         self.combobox_cpu_type.setObjectName("cpu_type")
 
-        self.label_input_path = QLabel(group_box)
+        self.label_input_path = QLabel(self.group_box)
         self.label_input_path.setGeometry(QRect(10, 44, 100, 20))
         self.label_input_path.setObjectName("label_input_path")
 
-        self.input_path = QLineEdit(group_box)
+        self.input_path = QLineEdit(self.group_box)
         self.input_path.setGeometry(QRect(110, 44, 320, 20))
         self.input_path.setReadOnly(True)
         self.input_path.setObjectName("input_path")
 
-        self.tool_btn_input_path = QToolButton(group_box)
+        self.tool_btn_input_path = QToolButton(self.group_box)
         self.tool_btn_input_path.setGeometry(QRect(435, 44, 20, 20))
         self.tool_btn_input_path.setObjectName("tool_btn_input_path")
 
-        self.label_output_path = QLabel(group_box)
+        self.label_output_path = QLabel(self.group_box)
         self.label_output_path.setGeometry(QRect(10, 74, 100, 20))
         self.label_output_path.setObjectName("label_output_path")
 
-        self.output_path = QLineEdit(group_box)
+        self.output_path = QLineEdit(self.group_box)
         self.output_path.setGeometry(QRect(110, 74, 320, 20))
         self.output_path.setReadOnly(True)
         self.output_path.setObjectName("output_path")
 
-        self.tool_btn_output_path = QToolButton(group_box)
+        self.tool_btn_output_path = QToolButton(self.group_box)
         self.tool_btn_output_path.setGeometry(QRect(435, 74, 20, 20))
         self.tool_btn_output_path.setObjectName("tool_btn_input_path")
 
-        self.btn_extract = QPushButton(group_box)
+        self.btn_extract = QPushButton(self.group_box)
         self.btn_extract.setGeometry(QRect(460, 45, 100, 50))
         self.btn_extract.setIconSize(QSize(24, 24))
         icon = QIcon()
@@ -123,9 +124,9 @@ class MainView(BaseView):
         self.btn_extract.setIcon(icon)
         self.btn_extract.setObjectName("btn_execute")
         self.btn_extract.setFont(self.set_font(size=15, bold=True))
-        self.btn_extract.setEnabled(True)
+        self.btn_extract.setEnabled(False)
 
-        self.log = QTextEdit(central_widget)
+        self.log = QTextBrowser(central_widget)
         self.log.setGeometry(QRect(5, 120, 570, 330))
         self.log.setObjectName("log")
 

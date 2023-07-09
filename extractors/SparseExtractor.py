@@ -150,7 +150,7 @@ class SparseExtractor(BaseExtractor):
                 payload.input_file = find_images
             else:
                 self.logger.information(f"Multiple files found")
-                payload.input_file = self.user_interface.choice_build_configuration(find_images)
+                payload.input_file = self.user_interface.choice_build_configuration(find_images, find_images[0].parent)
         else:
             raise AttributeError
         self.logger.information("Run sparse extractor")

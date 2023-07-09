@@ -9,6 +9,7 @@ __author__ = 'MiuiPro.info DEV Team'
 __copyright__ = 'Copyright (c) 2023 MiuiPro.info'
 
 from ui.gui import App, MainWindow
+from ui.gui.workers import ExtractWorker
 
 OFP_PREFIX = "ofp"
 OPS_PREFIX = "ops"
@@ -65,6 +66,13 @@ class ApplicationContainer(containers.DeclarativeContainer):
         "gui": providers.Singleton(
             MainWindow,
             app=app,
+            extract_worker=providers.Singleton(
+                ExtractWorker,
+                extractors=extractors,
+                logger=logging
+            ),
+            configuration=configuration.ui.gui,
+            logger=logging
         )
     })
 

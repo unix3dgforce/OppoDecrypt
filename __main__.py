@@ -46,7 +46,7 @@ def load_yaml_configuration() -> dict:
 
 
 def set_debug_mode(handlers: dict[Any, Any]) -> dict[Any, Any]:
-    for item in configuration['log']['handlers']:
+    for item in handlers:
         item.update({'level': 'DEBUG', 'format': '<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> ' + item['format']})
 
     return handlers
@@ -78,7 +78,7 @@ def create_parser() -> argparse.ArgumentParser:
         dest="cpu",
         type=CpuSupportEnum,
         choices=choices,
-        action=EnumAction
+        action=EnumAction,
     )
 
     _parser.add_argument(
@@ -118,27 +118,34 @@ def create_parser() -> argparse.ArgumentParser:
     return _parser
 
 
+def run_container(params: dict[str, Any] = {}):
+    container = ApplicationContainer()
+    configuration = load_yaml_configuration()
+    debug = params.pop("debug", False)
+    if debug:
+        configuration['log']['handlers'] = set_debug_mode(configuration['log']['handlers'])
+
+    container.configuration.from_dict(configuration)
+    container.init_resources()
+    container.wire(modules=[sys.modules[__name__]])
+
+    main(**{k.lower(): v for k, v in params.items()})
+
+
 if __name__ == '__main__':
+    if sys.argv[1].lower() == "--gui":
+        run_container({"gui": True})
+
     parser = create_parser()
     namespace = parser.parse_args()
 
     if len(sys.argv) >= 2:
-        if not namespace.INPUT_FILE.exists():
+        if not namespace.gui and not namespace.INPUT_FILE.exists():
             sys.stderr.write(f"File `{namespace.INPUT_FILE}` not found\n\n")
             parser.print_help(file=sys.stderr)
             sys.exit(ExitCode.CONFIG)
 
-        container = ApplicationContainer()
-        configuration = load_yaml_configuration()
-        debug = vars(namespace).pop('debug', False)
-        if debug:
-            configuration['log']['handlers'] = set_debug_mode(configuration['log']['handlers'])
-
-        container.configuration.from_dict(configuration)
-        container.init_resources()
-        container.wire(modules=[sys.modules[__name__]])
-
-        main(**{k.lower(): v for k, v in vars(namespace).items()})
+        run_container(vars(namespace))
     else:
         parser.print_usage()
         sys.exit(ExitCode.USAGE)

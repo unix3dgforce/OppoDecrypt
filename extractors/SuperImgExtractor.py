@@ -204,7 +204,7 @@ class SuperImgExtractor(BaseExtractor):
         return PayloadModel(input_file=extract_files if extract_files else None, output_dir=output_dir)
 
     def run(self, payload: PayloadModel) -> PayloadModel:
-        if not self.user_interface.launch_confirmation("Run conversion to non sparse image?", payload, forced=True):
+        if not self.user_interface.launch_confirmation("Run extract partition from super.img", payload, forced=True):
             return payload
 
         if payload.input_file is None:

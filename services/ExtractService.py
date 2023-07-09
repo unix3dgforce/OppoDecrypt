@@ -21,13 +21,9 @@ class ExtractService(IBaseExtractService):
 
     def _extract_with_gui(self, user_interface: IUserInterface, **kwargs):
         user_interface.extractors = self._extractors
-        loop = QEventLoop(user_interface.app)
-        asyncio.set_event_loop(loop)
-
+        user_interface.init(**kwargs)
         user_interface.show()
-
-        with loop:
-            loop.run_forever()
+        user_interface.app.exec()
 
         sys.exit(ExitCode.OK)
 
@@ -50,7 +46,7 @@ class ExtractService(IBaseExtractService):
         except (QualcommExtractorUnsupportedCryptoSettingsError,
                 QualcommExtractorXMLSectionNotFoundError,
                 MtkExtractorUnsupportedCryptoSettingsError) as error:
-            self._logger.error(error.message)
+            self._logger.error(error.text)
 
         except KeyError:
             self._logger.error(f"Not found extractor")

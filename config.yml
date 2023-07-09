@@ -66,6 +66,9 @@ extractors:
         Mc: "E8AE288C0192C54BF10C5707E9C4705B"
         UserKey: "D64FC385DCD52A3C9B5FBA8650F92EDA"
         Ivec: "79051FD8D8B6297E2E4559E997F63B7F"
+ui:
+  gui:
+    dark_mode: True
 log:
   handlers:
     - sink: !func sys.stdout
